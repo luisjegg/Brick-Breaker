@@ -13,10 +13,10 @@ using namespace std;
 
 float barX = 200, barY = 465, barWidth = 80, barheight = 5;
 float ballX = 235, ballY=430, ballWH = 10, ballVelX = 1.5, ballVelY = 1.5;
-const int brickAmount = 100;
+const int brickAmount = 150;
 int score = 0, chances = 3, previousScore = 0, highestScore = 0;
 bool flag = true, flag2 = true;
-string powerUpMessage = "";
+string powerUpMessage ;
 
 struct bricks{
     float x;
@@ -29,7 +29,7 @@ struct bricks{
 bricks bricksArray[brickAmount];
 vector<PowerUp*> powerUp;
 void createBricks(){
-    float brickX = 41, brickY = 50;
+    float brickX = 41, brickY = 0;
     for(int i=0;i<brickAmount;i++){
         if(brickX > 400){
             brickX = 41;
@@ -40,7 +40,7 @@ void createBricks(){
         bricksArray[i].width = 38.66;
         bricksArray[i].height = 10;
         brickX += 39.66;
-        if (rand() % 10 == 0) {  
+        if (rand() % 20 == 0) {  
             int powerUpIndex = rand() % powerUp.size();
             bricksArray[i].powerUp = powerUp[powerUpIndex];
         }
@@ -60,18 +60,21 @@ void createBricks(){
 }
 
 void print(const string& message) {
-   glRasterPos2f(490, 50);
+   glColor3f(1.0, 0.0, 0.0);
+   glRasterPos2f(490, 20);
     int len1 = message.length();
     for(int i = 0; i < len1; i++){
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, message[i]);
+        
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, message[i]);
     }
+    glColor3f(0.0, 0.0, 0.0);
     stringstream ss;
     ss << score;
     string s = "Score: "+ss.str();
     int len = s.length();
     glRasterPos2f(490, 70);
     for(int i = 0; i < len; i++){
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i]);
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, s[i]);
     }
 
     stringstream ss2;
@@ -203,7 +206,8 @@ bool checkCollision(float ballX, float ballY, float ballW, float ballH, float ob
             hasCollision = true;
             brick.isAlive = false;
             if (brick.powerUp != nullptr) {
-                brick.powerUp->applyEffect();
+                powerUpMessage = brick.powerUp->applyEffect();
+                
             }
         }
     }
@@ -295,8 +299,8 @@ void moveBall(){
                 barY = 465;
                 ballX = 235;
                 ballY = 430;
-                ballVelX = 0;
-                ballVelY = 0;
+                ballVelX = 1.5;
+                ballVelY = 1.5;
                 float brickX = 2, brickY = 2;
                 for(int i=0;i<brickAmount;i++){
                     if(brickX > 450){
@@ -388,6 +392,8 @@ powerUp.push_back(new SpeedBoost(0, 0));
 powerUp.push_back(new ExtraLife(0, 0));
 powerUp.push_back(new EnlargePaddle(0, 0));
 powerUp.push_back(new Nothing(0, 0));
+powerUp.push_back(new Nothing2(0, 0));
+powerUp.push_back(new Nothing3(0, 0));
 glutDisplayFunc(myDisplay);
 glutSpecialFunc(keyboard);
 glutMouseFunc(mouse);
@@ -403,7 +409,5 @@ powerUp.clear();
 
     return 0;
 }
-
-
 
 
