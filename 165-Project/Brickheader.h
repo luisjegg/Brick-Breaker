@@ -19,11 +19,11 @@ public:
     SpeedBoost(int x, int y) : PowerUp(x, y) {}
 
     string applyEffect() {
-    powerUpMessage = "Speed Boost applied!";
+    powerUpMessage = "POWERUP: Speed Boost!";
     extern float ballVelX;
     extern float ballVelY;
-    ballVelX += .1;
-    ballVelY += .1;
+    ballVelX += .5;
+    ballVelY += .5;
     cout << powerUpMessage << endl;
     return powerUpMessage;
 }
@@ -36,7 +36,7 @@ public:
     ExtraLife(int x, int y) : PowerUp(x, y) {}
 
     string applyEffect() {
-    powerUpMessage = "Extra Life applied!";
+    powerUpMessage = "POWERUP: Extra Life!";
     extern int chances;
     chances += 1;
     cout << powerUpMessage << endl;
@@ -52,7 +52,7 @@ public:
     }
 
     string applyEffect() {
-        powerUpMessage = "Paddle Enlarged!";
+        powerUpMessage = "POWERUP: Paddle Enlarged!";
         cout << powerUpMessage << endl;
         extern float barWidth;
         barWidth += 5; // increase barWidth by 80
@@ -68,11 +68,38 @@ class Nothing : public PowerUp{
 
     }
    string applyEffect() {
-    powerUpMessage = "Nothing";
+    powerUpMessage = "";
     cout << powerUpMessage << endl;
     return powerUpMessage;
 }
 private:
     std::string powerUpMessage;
 };
+class Nothing2 : public PowerUp{
+    public:
+    Nothing2(int x, int y):PowerUp(x, y){
+
+    }
+   string applyEffect() {
+    powerUpMessage = "";
+    cout << powerUpMessage << endl;
+    return powerUpMessage;
+}
+private:
+    std::string powerUpMessage;
+};
+class Nothing3 : public PowerUp{
+    public:
+    Nothing3(int x, int y):PowerUp(x, y){
+
+    }
+   string applyEffect() {
+    powerUpMessage = "";
+    cout << powerUpMessage << endl;
+    return powerUpMessage;
+}
+private:
+    std::string powerUpMessage;
+};
+
 #endif
