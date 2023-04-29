@@ -5,6 +5,8 @@
 #include<sstream>
 #include<chrono>
 #include<thread>
+#include "Brickheader.h"
+#include <vector>
 
 
 using namespace std;
@@ -14,6 +16,7 @@ float ballX = 235, ballY=430, ballWH = 10, ballVelX = 1.5, ballVelY = 1.5;
 const int brickAmount = 100;
 int score = 0, chances = 3, previousScore = 0, highestScore = 0;
 bool flag = true, flag2 = true;
+string powerUpMessage = "";
 
 struct bricks{
     float x;
@@ -21,9 +24,10 @@ struct bricks{
     float width;
     float height;
     bool isAlive= true;
+    PowerUp* powerUp = nullptr;
 };
 bricks bricksArray[brickAmount];
-
+vector<PowerUp*> powerUp;
 void createBricks(){
     float brickX = 41, brickY = 50;
     for(int i=0;i<brickAmount;i++){
@@ -36,6 +40,10 @@ void createBricks(){
         bricksArray[i].width = 38.66;
         bricksArray[i].height = 10;
         brickX += 39.66;
+        if (rand() % 10 == 0) {  
+            int powerUpIndex = rand() % powerUp.size();
+            bricksArray[i].powerUp = powerUp[powerUpIndex];
+        }
     }
     glColor3ub(0,0,255);
     glBegin(GL_QUADS);
@@ -45,46 +53,52 @@ void createBricks(){
             glVertex2f(bricksArray[i].x + bricksArray[i].width, bricksArray[i].y);
             glVertex2f(bricksArray[i].x + bricksArray[i].width, bricksArray[i].y + bricksArray[i].height);
             glVertex2f(bricksArray[i].x, bricksArray[i].y + bricksArray[i].height);
+          
         }
     }
     glEnd();
 }
 
-void print(int a){
-    glRasterPos2f(490, 40);
+void print(const string& message) {
+   glRasterPos2f(490, 50);
+    int len1 = message.length();
+    for(int i = 0; i < len1; i++){
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, message[i]);
+    }
     stringstream ss;
-    ss << a;
+    ss << score;
     string s = "Score: "+ss.str();
     int len = s.length();
-    for(int i = 0; i < len; i++){
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, s[i]);
-    }
     glRasterPos2f(490, 70);
+    for(int i = 0; i < len; i++){
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i]);
+    }
+
     stringstream ss2;
     ss2 << chances;
-    string chance = "Chances left: "+ss2.str();
+    string chance = "Lives left: "+ss2.str();
+    glRasterPos2f(490, 100);
     for(int i = 0; i < chance.length(); i++){
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, chance[i]);
     }
-    glRasterPos2f(490, 100);
+
     stringstream ss3;
     ss3 << previousScore;
     string prevScore = "Previous score: "+ss3.str();
+    glRasterPos2f(490, 130);
     for(int i = 0; i < prevScore.length(); i++){
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, prevScore[i]);
     }
-    glRasterPos2f(490, 130);
+
     stringstream ss4;
     ss4 << highestScore;
     string highScore = "Highest score: "+ss4.str();
+    glRasterPos2f(490, 160);
     for(int i = 0; i < highScore.length(); i++){
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, highScore[i]);
     }
-/*    string
-    for(int i = 0; i < highScore.length(); i++){
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, highScore[i]);
-    }*/
 }
+
 
 void message(bool a){
     if(a == false){
@@ -112,6 +126,8 @@ void completeMessage(bool a){
     }
 }
 
+
+
 void myDisplay(void){
     glClear (GL_COLOR_BUFFER_BIT);
     glColor3f (0.0, 0.0, 0.0);
@@ -123,6 +139,8 @@ void myDisplay(void){
     glVertex2f(barX+barWidth, barY+barheight);
     glVertex2f(barX, barY+barheight);
     glEnd();
+    
+    
     //Ball
     glBegin(GL_QUADS);
     glColor3ub(255, 0, 0);
@@ -141,9 +159,12 @@ void myDisplay(void){
     glVertex2f(485, 0);
     glEnd();
 
-    print(score);
+    glRasterPos2f(500, 430); 
+    
+    print(powerUpMessage);
     createBricks();
     message(flag);
+    
     completeMessage(flag2);
 
     glutSwapBuffers();
@@ -159,24 +180,53 @@ void myInit (void){
     gluOrtho2D(0.0, 760.0, 480.0, 0.0);
 }
 
-bool checkCollision(float aX, float aY, float aW, float aH, float bX, float bY, float bW, float bH){
-    if ( aY+aH < bY )
-        return false;
-    else if ( aY > bY+bH )
-        return false;
-    else if ( aX+aW < bX )
-        return false;
-    else if ( aX > bX+bW )
-        return false;
-    else
-        return true;
+bool checkCollision(float ballX, float ballY, float ballW, float ballH, float objX, float objY, float objW, float objH){
+    bool hasCollision = false;
+    // Check collision with bricks
+    for (int i = 0; i < brickAmount; i++) {
+        bricks& brick = bricksArray[i];
+        if (brick.isAlive) {
+            if (ballY + ballH < brick.y) {
+                continue;
+            }
+            if (ballY > brick.y + brick.height) {
+                continue;
+            }
+            if (ballX + ballW < brick.x) {
+                continue;
+            }
+            if (ballX > brick.x + brick.width) {
+                continue;
+            }
+            
+            // A collision with a brick has occurred
+            hasCollision = true;
+            brick.isAlive = false;
+            if (brick.powerUp != nullptr) {
+                brick.powerUp->applyEffect();
+            }
+        }
+    }
+
+    // Check collision with bar
+    if (ballY + ballH < objY) {
+        return hasCollision;
+    }
+    if (ballY > objY + objH) {
+        return hasCollision;
+    }
+    if (ballX + ballW < objX) {
+        return hasCollision;
+    }
+    if (ballX > objX + objW) {
+        return hasCollision;
+    }
+
+    // A collision with the bar has occurred
+    return true;
 }
 
 void moveBall(){
-    if(score >= 300){
-        ballVelX = 1.5;
-        ballVelY = 1.5;
-    }
     if(score >= 1000){
         barX = 200;
         barY = 465;
@@ -213,18 +263,18 @@ void moveBall(){
             if(bricksArray[i].isAlive == true){
                 if(checkCollision(ballX, ballY, ballWH, ballWH, bricksArray[i].x, bricksArray[i].y, bricksArray[i].width, bricksArray[i].height) == true){
                     ballVelX = -ballVelX;
-                    bricksArray[i].isAlive = false;
+                    bricksArray[i].isAlive = true;
                     score += 10;
                     break;
                 }
             }
         }
         ballY -= ballVelY;
-        for (int i=0; i<brickAmount; i++){
+  for (int i=0; i<brickAmount; i++){
             if(bricksArray[i].isAlive == true){
                 if(checkCollision(ballX, ballY, ballWH, ballWH, bricksArray[i].x, bricksArray[i].y, bricksArray[i].width, bricksArray[i].height) == true){
                     ballVelY = -ballVelY;
-                    bricksArray[i].isAlive = false;
+                    bricksArray[i].isAlive = true;
                     score += 10;
                     break;
                 }
@@ -328,16 +378,32 @@ void mouse(int button,int state,int x,int y){
 // Reading part
 
 int main(int argc, char** argv){
+srand(time(nullptr));
 glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB);
 glutInitWindowSize(760,480);
 glutInitWindowPosition(100,150);
 glutInit(&argc, argv);
 glutCreateWindow("Brick Breaker");
+powerUp.push_back(new SpeedBoost(0, 0));
+powerUp.push_back(new ExtraLife(0, 0));
+powerUp.push_back(new EnlargePaddle(0, 0));
+powerUp.push_back(new Nothing(0, 0));
 glutDisplayFunc(myDisplay);
 glutSpecialFunc(keyboard);
 glutMouseFunc(mouse);
 myInit();
 glutMainLoop();
+    for (PowerUp* powerUp : powerUp) {
+    powerUp->applyEffect();
 }
+    for (PowerUp* powerUp : powerUp) {
+    delete powerUp;
+}
+powerUp.clear();
+
+    return 0;
+}
+
+
 
 
