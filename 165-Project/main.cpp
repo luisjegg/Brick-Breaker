@@ -13,7 +13,7 @@ using namespace std;
 
 float barX = 200, barY = 465, barWidth = 80, barheight = 5;
 float ballX = 235, ballY=430, ballWH = 10, ballVelX = 1.5, ballVelY = 1.5;
-const int brickAmount = 150;
+const int brickAmount = 100;
 int score = 0, chances = 3, previousScore = 0, highestScore = 0;
 bool flag = true, flag2 = true;
 string powerUpMessage ;
