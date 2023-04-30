@@ -22,9 +22,9 @@ public:
     powerUpMessage = "POWERUP: Speed Boost!";
     extern float ballVelX;
     extern float ballVelY;
-    ballVelX += .5;
-    ballVelY += .5;
-    cout << powerUpMessage << endl;
+    ballVelX += .7;
+    ballVelY += 1;
+    cout << powerUpMessage << endl;                                  
     return powerUpMessage;
 }
 private:
